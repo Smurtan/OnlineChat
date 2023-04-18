@@ -1,0 +1,131 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    background: #17212B;
+    font-family: 'Ubuntu', sans-serif;
+}
+
+.sign {
+    max-width: 450px;
+    max-height: 500px;
+    background: #17212B;
+    text-align: center;
+    padding: 40px 77px 50px;
+    margin: calc((100vh - 560px) / 2) auto;
+}
+
+.sign__logo {
+    width: 140px;
+    height: 140px;
+    border-radius: 100%;
+    padding: 37px 27px;
+    background: #232F3D;
+    margin: 0 auto;
+}
+
+.sign__title {
+    font-weight: 500;
+    font-size: 24px;
+    line-height: 28px;
+    color: #fff;
+    margin-top: 30px;
+}
+
+.sign__text {
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 18px;
+    color: #7F91A4;
+    margin-top: 13px;
+}
+
+.sign__nik {
+    border: none;
+    border-bottom: 1px solid #465461;
+    background: none;
+    margin-top: 38px;
+    display: block;
+    max-width: 300px;
+    width: 100%;
+    padding: 0 0 15px 8px;
+    color: #fff;
+    font-family: 'Ubuntu', sans-serif;
+    font-weight: 300;
+    font-size: 16px;
+    line-height: 18px;
+}
+
+.sign__nik::placeholder {
+    font-family: 'Ubuntu', sans-serif;
+    font-weight: 300;
+    font-size: 16px;
+    line-height: 18px;
+    color: #858F98;
+}
+
+.sign__nik:focus-visible {
+    outline: none;
+    border-bottom-color: #5188C0;
+}
+
+.sign__btn {
+    text-transform: uppercase;
+    border: none;
+    border-radius: 5px;
+    background: #5188C1;
+    color: #fff;
+    font-weight: 500;
+    font-size: 15px;
+    line-height: 17px;
+    padding: 13px 40px;
+    margin-top: 40px;
+}
+
+/*====================================================================*/
+
+.photo {
+    max-width: 360px;
+    max-height: 450px;
+    background: #17212B;
+    text-align: center;
+    padding: 33px 20px 20px;
+    margin: calc((100vh - 460px) / 2) auto;
+    text-align: center;
+}
+
+.photo_img {
+    width: 280px;
+    height: 300px;
+    margin: 0 auto;
+}
+
+.photo__text {
+    color: #7F91A4;
+    font-weight: 300;
+    font-size: 14px;
+    line-height: 16px;
+    margin-top: 15px; 
+}
+
+.photo_control {
+    margin: 23px 23px 20px 110px;
+    display: flex;
+}
+
+.photo_control button {
+    background: none;
+    border: none;
+    color: #6BB2F2;
+    text-transform: uppercase;
+    padding: 10px 20px;
+}
+
+button.pholo__save {
+    background: #1D2A3A;
+    padding: 10px
+}
+ 
