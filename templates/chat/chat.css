@@ -1,0 +1,255 @@
+*,
+*::after,
+*::before {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Ubuntu', sans-serif;
+    background-color: #0B111A;
+    max-height: 100vh;
+    overflow: hidden;
+}
+
+ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+li, h3, h4, p {
+    margin: 0;
+    padding: 0;
+}
+
+.outher__chat {
+    margin: 0 auto;
+    max-width: 1430px;
+    max-height: 1040px;
+    height: 100%;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 3px;
+    border: 2px solid #17212B;
+    background-color: #0E1621;
+    border-radius: 20px;
+}
+
+.side {
+    max-width: 300px;
+    padding: 40px 40px 40px 17px;
+    background-color: #17212B;
+    border-radius: 20px 0 0 20px;
+    font-size: 16px;
+    line-height: 18px;
+}
+
+.side__burger {
+    margin-left: 8px;
+}
+
+.side__user-list {
+    margin-top: 30px;
+}
+
+.side__user-item {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: 50px 270px;
+    grid-template-rows: 25px 25px;
+    column-gap: 12px;
+    row-gap: 3px;
+    grid-template-areas: 
+        "A B"
+        "A C";
+}
+
+.user__logo {
+    grid-area: A;
+    width: 47px;
+    height: 47px;
+    border-radius: 100%;
+}
+
+.user__name {
+    margin: 0;
+    padding: 0;
+    grid-area: B;
+    font-weight: 500;
+    color: #5387C1;
+}
+
+.user__message {
+    margin: 0;
+    padding: 0;
+    grid-area: C;
+    font-weight: 300;
+    color: #7F91A4;
+}
+
+/*==========================================================================================*/
+
+.chat {
+    /* max-width: 1025px; */
+    width: 100%;
+    height: 100%;
+}
+
+.header {
+    background-color: #17212B;
+    max-height: 100px;
+    width: 100%;
+    text-align: left;
+    padding: 17px 0 17px 20px;
+    border-radius: 0 20px 0 0;
+}
+
+.header__title {
+    color: #fff;
+    font-weight: 300;
+    font-size: 16px;
+    line-height: 18px;
+}
+
+.header__text {
+    color: #7F91A4;
+    margin-top: 4px;
+    font-weight: 300;
+    font-size: 14px;
+    line-height: 16px;
+}
+
+.message {
+    overflow-y: scroll;
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: column;
+    height: 80vh;
+    padding: 20px;
+    width: 100%;
+}
+
+.message::-webkit-scrollbar {
+    width: 10px;
+    background-color: #0E1621;
+}
+
+.message::-webkit-scrollbar-thumb {
+    width: 10px;
+    border-radius: 5px;
+    background-color: #17212B;
+}
+
+.message__block {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.message__block-logo {
+    margin-top: 24px;
+    width: 41px;
+    height: 41px;
+    border-radius: 100%;
+}
+
+.message__block-title {
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 16px;
+    color: #5387C1;
+}
+
+.message__block-item {
+    margin-top: 8px;
+    background-color: #182633;
+    color: #fff;
+    font-weight: 300;
+    font-size: 16px;
+    line-height: 18px;
+    padding: 11px 60px 12px 20px;
+    position: relative;
+    border-radius: calc(50vh * 0.03);
+    max-width: 450px;
+    float: left;
+    clear: left;
+}
+
+.message__time {
+    position: absolute;
+    color: #7F91A4;
+    right: 12px;
+    bottom: 7px;
+}
+
+.message__block-my {
+    flex-direction: row-reverse;
+    text-align: right;
+}
+
+.message__block-my .message__block-item {
+    float: right;
+    clear: both;
+}
+
+.entering {
+    background-color: #17212B;
+    /* max-height: 100px; */
+    width: 100%;
+    /* height: 100%; */
+    padding: 20px 40px 13px;
+    font-size: 16px;
+    line-height: 18px;
+    border-radius: 0 0 20px 0;
+    position: relative; 
+}
+
+.entering__input {
+    border: none;
+    background: none;
+    font-weight: 300;
+    color: #fff;
+    max-width: 700px;
+    width: 100%;
+    resize: none;
+    padding: 8px 5px;
+}
+
+.entering__input::placeholder {
+    font-family: 'Ubuntu', sans-serif;
+    font-weight: 300;
+    font-size: 16px;
+    line-height: 18px;
+    padding-top: 3px;
+    color: #5B6774;
+}
+
+.entering__input:focus-visible {
+    outline: none;
+}
+
+.entering__input::-webkit-scrollbar {
+    width: 3px;
+    background-color: #17212B;
+}
+
+.entering__input::-webkit-scrollbar-thumb {
+    width: 3px;
+    border-radius: 2px;
+    background-color: #0E1621;
+}
+
+.entering__button {
+    position: absolute;
+    right: 40px;
+    bottom: 20px; 
+    padding: 8px 20px;
+    color: #fff;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 18px;
+    background-color: #5387C1;
+    border: none;
+    border-radius: 5px;
+}
