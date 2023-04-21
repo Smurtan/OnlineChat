@@ -1,0 +1,78 @@
+.photo {
+    max-width: 360px;
+    max-height: 450px;
+    background: #17212B;
+    text-align: center;
+    padding: 33px 20px 20px;
+    margin: calc((100vh - 460px) / 2) auto;
+    text-align: center;
+}
+
+.photo__input-wrapper {
+    max-width: 280px;
+    height: 300px;
+    width: 100%;
+    margin: 0 auto;
+    position: relative;
+}
+
+.photo__input {
+    display: none;
+}
+
+.photo__input-button {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.photo__button {
+    opacity: 0;
+    z-index: 5;
+}
+
+.photo__img {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 280px;
+    height: 300px;
+    background: none;
+}
+
+.photo__input-wrapper:hover .photo__img {
+    background: #000;
+    opacity: .3;
+}
+
+.photo__input-wrapper:hover .photo__button {
+    opacity: 1;
+}
+
+.photo__text {
+    color: #7F91A4;
+    font-weight: 300;
+    font-size: 14px;
+    line-height: 16px;
+    margin-top: 15px;
+}
+
+.photo_control {
+    margin: 23px 23px 20px 110px;
+    display: flex;
+}
+
+.photo_control button {
+    background: none;
+    border: none;
+    color: #6BB2F2;
+    text-transform: uppercase;
+    padding: 10px 20px;
+}
+
+button.photo__save {
+    background: #1D2A3A;
+    padding: 10px
+}

@@ -1,0 +1,15 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    background: #17212B;
+    font-family: 'Ubuntu', sans-serif;
+}
+
+img {
+    border: 0;
+    outline: none;
+}
