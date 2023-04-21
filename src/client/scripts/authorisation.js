@@ -19,14 +19,9 @@ export default class Authorisation {
 
         this.userNameNode.value = userName;
 
-        signInButtonNode.addEventListener('click', (e) => {
-            this.userName = this.userNameNode.value;
-            console.log(this.userName);
-            if (this.userName.length > 0) {
-                this.showChangePhotoWindow();
-            }
-            // Добавить ошибку с отсутствием ника
-        })
+        this.userNameNode.addEventListener('change', () => {this.setUserName()})
+
+        signInButtonNode.addEventListener('click', () => {this.setUserName()})
     }
 
     showChangePhotoWindow() {
@@ -53,5 +48,13 @@ export default class Authorisation {
 
     signIn(userName) {
         new Chat(userName)
+    }
+
+    setUserName() {
+        this.userName = this.userNameNode.value;
+        if (this.userName.length > 0) {
+            this.showChangePhotoWindow();
+        }
+        // Добавить ошибку с отсутствием ника
     }
 }
