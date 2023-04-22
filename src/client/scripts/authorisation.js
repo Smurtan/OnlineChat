@@ -37,17 +37,18 @@ export default class Authorisation {
         })
 
         saveButtonNode.addEventListener('click', (e) => {
-            this.signIn(this.userName);
+
+            this.signIn(this.userName, this.photo);
         })
 
         inputImageNode.addEventListener('change', (e) => {
-            this.urlPhoto = URL.createObjectURL(e.target.files[0]);
-            showImageNode.src = this.urlPhoto;
+            this.photo = e.target.files[0];
+            showImageNode.src = URL.createObjectURL(e.target.files[0]);
         })
     }
 
-    signIn(userName) {
-        new Chat(userName)
+    signIn(userName, photo) {
+        new Chat(userName, photo)
     }
 
     setUserName() {

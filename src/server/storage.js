@@ -21,12 +21,16 @@ class Storage {
         },1800000)
     }
 
-    addUser(userName, photo = "./photo.jpeg") {
-        this.users[this.userId++] = {
+    addUser(id, userName) {
+        this.users[id] = {
             userName: userName,
-            photo: photo
+            photo: undefined
         };
-        console.log(this.users);
+        console.log(this.users[id]);
+    }
+
+    addUserPhoto(id, photo) {
+        this.users[id].photo = photo;
     }
 
     addMessage(userId, text, time) {
@@ -35,20 +39,26 @@ class Storage {
             text: text,
             time: time
         });
-        console.log(this.messages)
     }
 
     getUsers() {
-        const users = [];
+        const users = {};
 
         for (const item in this.users) {
-            users.push({
-                userName: this.users[item].userName,
-                photo: this.users[item].photo,
-            });
+            users[item] = {
+                userName: this.users[item].userName
+            };
         }
 
         return users;
+    }
+
+    getPhoto(id) {
+        if (this.users[id].photo) {
+            return this.users[id].photo;
+        } else {
+            return "�";
+        }
     }
 
     getMessages() {

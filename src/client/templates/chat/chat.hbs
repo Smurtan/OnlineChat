@@ -10,7 +10,7 @@
         <ul class="side__user-list">
             {{#each users}}
                 <li class="side__user-item">
-                    <img class="user__logo" src="../../img/logo.png">
+                    {{insert-img this.photo}}
                     <h4 class="user__name">{{this.userName}}</h4>
                     <p class="user__message">Рад был пообщаться...</p>
                 </li>
@@ -31,7 +31,7 @@
         <section class="message">
             {{#each messages}}
                 <div class="message__block">
-                    <img class="message__block-logo" src="../../img/logo.png">
+                    <img class="message__block-logo" src="../../../server/img/logo.png">
                     <div class="message__block-text">
                         <h4 class="message__block-title">{{this.userName}}</h4>
                         <ul class="message__block-list">
@@ -82,8 +82,8 @@
 <!--            </div>-->
         </section>
         <section class="entering">
-            <textarea class="entering__input" type="text" placeholder="Введите сообщение..."></textarea>
-            <button class="entering__button">Отправить</button>
+            <textarea class="entering__input" type="text" placeholder="Введите сообщение..." data-role="input-message"></textarea>
+            <button class="entering__button" data-role="send-message">Отправить</button>
         </section>
     </section>
 </section>

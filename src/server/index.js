@@ -2,14 +2,14 @@ const Storage = require('./storage');
 const WebSocketServer = new require('ws');
 
 let clients = {};
-let currentId = 1;
+let currentId = 3;
 
 const webSocketServer = new WebSocketServer.Server({port: 8080});
 
 const storage = new Storage();
 
-storage.addUser("privet", "./photo.png");
-storage.addUser("poka", "./photo.png");
+storage.addUser(1, "privet");
+storage.addUser(2, "poka");
 
 storage.addMessage(1, "Я пробую что то добавить", "16:31");
 storage.addMessage(2, "Сейчас тоже", "16:32");
@@ -18,15 +18,26 @@ storage.addMessage(1, "И сейчас", "16:33");
 webSocketServer.on('connection', (ws) => {
     const id = currentId++;
     clients[id] = ws;
+
     console.log("НОВОЕ СОЕДИНЕНИЕ");
 
     ws.on('message', (message) => {
-        if (message.toString().slice(0, 15) === "__GET_CONDITION") {
-            const data = JSON.parse(message.toString().slice(16, -1) + '}')
-            storage.addUser(data.name, data.photo)
+        if (message.toString().slice(0, 2) === "_ ") {
+            for (const key in clients) {
+                clients[key].send("_ " + message.toString().slice(2, message.length));
+            }
+        } else if (message.toString().slice(0, 15) === "__GET_CONDITION") {
+            const userName = message.toString().slice(16, message.length)
+            storage.addUser(id, userName)
+
             clients[id].send(`__CONDITION ${getCondition()}`);
+            for (let i = 1; i < currentId; i++) {
+                clients[id].send(storage.getPhoto(i));
+            }
+        } else if (message.toString().slice(0, 1) === "�") {
+            storage.addUserPhoto(id, message);
         }
-        console.log('получено сообщение ' + message);
+        //console.log('получено сообщение ' + message);
     })
 
     ws.on('close', () => {
@@ -37,8 +48,10 @@ webSocketServer.on('connection', (ws) => {
 
 function getCondition() {
     const users = storage.getUsers();
+    console.log(users);
     const messages = storage.getMessages();
     const condition = {
+        countUsers: Object.keys(users).length,
         users: users,
         messages: messages,
     }
