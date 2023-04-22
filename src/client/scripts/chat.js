@@ -29,8 +29,8 @@ export default class Chat {
         })
 
         this.socket.addEventListener('message', (message) => {
-            if (message.data.slice(0, 2) === "_ ") {
-                const _message = message.toString().slice(2, message.length);
+            if (message.data.toString().slice(0, 2) === "_ ") {
+                const _message = JSON.parse(message.data.toString().slice(2, message.length));
                 this.addMessage(_message);
             } else if (message.data.slice(0, 12) === "__CONDITION ") {
                 const condition = JSON.parse(message.data.slice(12, message.data.length));
@@ -88,11 +88,11 @@ export default class Chat {
             const message = {
                 text: this.inputMessageNode.value,
                 time: this.date.getHours() + ":" + this.date.getMinutes(),
-                name: this.userName
+                userName: this.userName
             }
             this.socket.send("_ " + JSON.stringify(message));
             this.inputMessageNode.value = '';
-            this.addMessage(message, true)
+            //this.messageWrapperNode.lastElementChild.classList.add("message__block-my")
         });
     }
 
@@ -100,10 +100,7 @@ export default class Chat {
 
     }
 
-    addMessage(message, id = false) {
+    addMessage(message) {
         this.messageWrapperNode.innerHTML += messageBlockTemplate({info: message});
-        if (id) {
-            this.messageWrapperNode.lastElementChild.classList.add("message__block-my")
-        }
     }
 }

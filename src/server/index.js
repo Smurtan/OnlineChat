@@ -12,17 +12,17 @@ storage.addUser(1, "privet");
 storage.addUser(2, "poka");
 
 storage.addMessage(JSON.stringify({
-    name: 'fgnh',
+    userName: 'fgnh',
     text: "Я пробую что то добавить",
     time: "16:32"
 }));
 storage.addMessage(JSON.stringify({
-    name: 'fgnh',
+    userName: 'fgnh',
     text: "И сейчас",
     time: "16:32"
 }));
 storage.addMessage(JSON.stringify({
-    name: 'fgnh',
+    userName: 'fgnh',
     text: "Сейчас тоже",
     time: "16:33"
 }));
@@ -39,7 +39,7 @@ webSocketServer.on('connection', (ws) => {
             storage.addMessage(_message);
 
             for (const key in clients) {
-                clients[key].send("_ " + _message);
+                clients[key].send(message.toString());
             }
         } else if (message.toString().slice(0, 15) === "__GET_CONDITION") {
             const userName = message.toString().slice(16, message.length)

@@ -182,13 +182,14 @@ li, h3, h4, p {
 }
 
 .message__block-my .message__block-item {
+    background-color: #2b5279;
     float: right;
     clear: both;
 }
 
 .entering {
     background-color: #17212B;
-     max-height: 80px;
+    max-height: 80px;
     width: 100%;
     padding: 18px 40px 13px;
     font-size: 18px;

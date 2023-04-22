@@ -36,7 +36,7 @@ class Storage {
     addMessage(message) {
         message = JSON.parse(message);
         this.messages.push({
-            userName: message.name,
+            userName: message.userName,
             text: message.text,
             time: message.time
         });
