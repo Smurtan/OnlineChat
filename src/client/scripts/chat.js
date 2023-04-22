@@ -1,11 +1,15 @@
 import chatTemplate from "../templates/chat/chat.hbs";
 import loadingTemplate from "../templates/chat/loading.hbs";
+import messageBlockTemplate from "../templates/chat/message-block.hbs";
+import messageItemTemplate from "../templates/chat/message-item.hbs";
 
 
 export default class Chat {
     constructor(userName, photo) {
         this.userName = userName;
         this.photo = photo;
+
+        this.date = new Date();
 
         this.plaseInsertion = document.getElementById("insertion");
         this.showLoadingWindow();
@@ -26,7 +30,8 @@ export default class Chat {
 
         this.socket.addEventListener('message', (message) => {
             if (message.data.slice(0, 2) === "_ ") {
-
+                const _message = message.toString().slice(2, message.length);
+                this.addMessage(_message);
             } else if (message.data.slice(0, 12) === "__CONDITION ") {
                 const condition = JSON.parse(message.data.slice(12, message.data.length));
                 console.log(condition);
@@ -77,16 +82,28 @@ export default class Chat {
         this.inputMessageNode = this.plaseInsertion.querySelector('[data-role=input-message]');
         this.sendMessageNode = this.plaseInsertion.querySelector('[data-role=send-message]');
 
-        this.inputMessageNode.addEventListener('change', this.sendMessage);
-        this.sendMessageNode.addEventListener('click', this.sendMessage);
+        this.messageWrapperNode = this.plaseInsertion.querySelector('[data-role=message-wrapper]');
+
+        this.sendMessageNode.addEventListener('click', () => {
+            const message = {
+                text: this.inputMessageNode.value,
+                time: this.date.getHours() + ":" + this.date.getMinutes(),
+                name: this.userName
+            }
+            this.socket.send("_ " + JSON.stringify(message));
+            this.inputMessageNode.value = '';
+            this.addMessage(message, true)
+        });
     }
 
     sendMessage() {
-        this.socket.send("_ " + this.inputMessageNode.value);
-        this.inputMessageNode.value = '';
+
     }
 
-    addMessage() {
-
+    addMessage(message, id = false) {
+        this.messageWrapperNode.innerHTML += messageBlockTemplate({info: message});
+        if (id) {
+            this.messageWrapperNode.lastElementChild.classList.add("message__block-my")
+        }
     }
 }

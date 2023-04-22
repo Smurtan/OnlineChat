@@ -11,9 +11,21 @@ const storage = new Storage();
 storage.addUser(1, "privet");
 storage.addUser(2, "poka");
 
-storage.addMessage(1, "Я пробую что то добавить", "16:31");
-storage.addMessage(2, "Сейчас тоже", "16:32");
-storage.addMessage(1, "И сейчас", "16:33");
+storage.addMessage(JSON.stringify({
+    name: 'fgnh',
+    text: "Я пробую что то добавить",
+    time: "16:32"
+}));
+storage.addMessage(JSON.stringify({
+    name: 'fgnh',
+    text: "И сейчас",
+    time: "16:32"
+}));
+storage.addMessage(JSON.stringify({
+    name: 'fgnh',
+    text: "Сейчас тоже",
+    time: "16:33"
+}));
 
 webSocketServer.on('connection', (ws) => {
     const id = currentId++;
@@ -23,8 +35,11 @@ webSocketServer.on('connection', (ws) => {
 
     ws.on('message', (message) => {
         if (message.toString().slice(0, 2) === "_ ") {
+            const _message = message.toString().slice(2, message.length);
+            storage.addMessage(_message);
+
             for (const key in clients) {
-                clients[key].send("_ " + message.toString().slice(2, message.length));
+                clients[key].send("_ " + _message);
             }
         } else if (message.toString().slice(0, 15) === "__GET_CONDITION") {
             const userName = message.toString().slice(16, message.length)

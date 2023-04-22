@@ -33,11 +33,12 @@ class Storage {
         this.users[id].photo = photo;
     }
 
-    addMessage(userId, text, time) {
+    addMessage(message) {
+        message = JSON.parse(message);
         this.messages.push({
-            userName: this.users[userId].userName,
-            text: text,
-            time: time
+            userName: message.name,
+            text: message.text,
+            time: message.time
         });
     }
 

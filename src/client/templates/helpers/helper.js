@@ -11,4 +11,4 @@ Handlebars.registerHelper('insert-img', (url) => {
     return new Handlebars.SafeString(`<img class="user__logo" src="${src}">`)
 })
 
-module.exports = Handlebars
+module.exports = Handlebars;
