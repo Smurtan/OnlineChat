@@ -1,9 +1,9 @@
-import AuthorisationTemplate from "../templates/authorisation/authorization.hbs";
-import PhotoTemplate from "../templates/photo/photo.hbs";
+import authorisationTemplate from "../templates/authorisation/authorization.hbs";
+import photoTemplate from "../templates/photo/photo.hbs";
 
-import Image from "../img/2-04.png";
+import Image from "../img/import.png";
 
-import Chat from "../chat.js";
+import Chat from "./chat.js";
 
 export default class Authorisation {
     constructor() {
@@ -12,39 +12,50 @@ export default class Authorisation {
     }
 
     showAuthorisationWindow(userName = '') {
-        this.plaseInsertion.innerHTML = AuthorisationTemplate();
+        this.plaseInsertion.innerHTML = authorisationTemplate();
 
         this.userNameNode = this.plaseInsertion.querySelector('[data-role=input_userName]');
         const signInButtonNode = this.plaseInsertion.querySelector('[data-role=sign_in]');
 
         this.userNameNode.value = userName;
 
-        signInButtonNode.addEventListener('click', (e) => {
-            this.userName = this.userNameNode.value;
-            console.log(this.userName);
-            if (this.userName.length > 0) {
-                this.showChangePhotoWindow();
-            }
-            // Добавить ошибку с отсутствием ника
-        })
+        this.userNameNode.addEventListener('change', () => {this.setUserName()})
+
+        signInButtonNode.addEventListener('click', () => {this.setUserName()})
     }
 
     showChangePhotoWindow() {
-        this.plaseInsertion.innerHTML = PhotoTemplate({photo: Image});
+        this.plaseInsertion.innerHTML = photoTemplate({photo: Image});
 
         const cancelButtonNode = this.plaseInsertion.querySelector('[data-role=cancel]');
         const saveButtonNode = this.plaseInsertion.querySelector('[data-role=save]');
+        const inputImageNode = this.plaseInsertion.querySelector('[data-role=choose_img]');
+        const showImageNode = this.plaseInsertion.querySelector('[data-role=show_img]');
 
         cancelButtonNode.addEventListener('click', (e) => {
             this.showAuthorisationWindow(this.userName);
         })
 
         saveButtonNode.addEventListener('click', (e) => {
-            this.signIn(this.userName);
+
+            this.signIn(this.userName, this.photo);
+        })
+
+        inputImageNode.addEventListener('change', (e) => {
+            this.photo = e.target.files[0];
+            showImageNode.src = URL.createObjectURL(e.target.files[0]);
         })
     }
 
-    signIn(userName) {
-        new Chat(userName)
+    signIn(userName, photo) {
+        new Chat(userName, photo)
+    }
+
+    setUserName() {
+        this.userName = this.userNameNode.value;
+        if (this.userName.length > 0) {
+            this.showChangePhotoWindow();
+        }
+        // Добавить ошибку с отсутствием ника
     }
 }

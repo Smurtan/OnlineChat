@@ -1,0 +1,19 @@
+<section class="photo">
+    <div class="photo__input-wrapper">
+        <input class="photo__input" id="input__photo" type="file" name="photo" accept="image/*" data-role="choose_img"/>
+        <label class="photo__input-button" for="input__photo">
+            <img class="photo__img" src="{{photo}}" data-role="show_img"/>
+            <div class="photo__button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="70" height="70" viewBox="0 0 24 24">
+                    <path fill="#ffffff"
+                          d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5l-5-5l1.41-1.41L11 12.67V3h2z" />
+                </svg>
+            </div>
+        </label>
+    </div>
+    <p class="photo__text">Область для профильной фотографии</p>
+    <div class="photo_control">
+        <button class="photo__cancel" data-role="cancel">ОТМЕНА</button>
+        <button class="photo__save" data-role="save">СОХРАНИТЬ</button>
+    </div>
+</section>
