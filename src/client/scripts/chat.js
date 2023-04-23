@@ -2,6 +2,8 @@ import chatTemplate from "../templates/chat/chat.hbs";
 import loadingTemplate from "../templates/chat/loading.hbs";
 import messageBlockTemplate from "../templates/chat/message-block.hbs";
 import messageItemTemplate from "../templates/chat/message-item.hbs";
+import informationTemplate from "../templates/chat/information-message.hbs";
+import userTemplate from "../templates/chat/user.hbs";
 
 
 export default class Chat {
@@ -11,7 +13,7 @@ export default class Chat {
 
         this.date = new Date();
 
-        this.plaseInsertion = document.getElementById("insertion");
+        this.plaseInsertionNode = document.getElementById("insertion");
         this.showLoadingWindow();
 
         this.login();
@@ -21,43 +23,36 @@ export default class Chat {
         this.socket = await new WebSocket("ws://localhost:8080");
 
         this.socket.addEventListener('open', (e) => {
-            console.log('Соединение установлено!');
-
             this.socket.send("__GET_CONDITION " + this.userName);
             this.socket.send(this.photo);
-            //this.socket.send("__GET_CONDITION " + JSON.stringify(data));
         })
 
         this.socket.addEventListener('message', (message) => {
-            if (message.data.toString().slice(0, 2) === "_ ") {
-                const _message = JSON.parse(message.data.toString().slice(2, message.length));
+            if (message.data.slice(0, 2) === "_ ") {
+                const _message = JSON.parse(message.data.toString().slice(2, message.data.length));
                 this.addMessage(_message);
-            } else if (message.data.slice(0, 12) === "__CONDITION ") {
+            }
+            else if (message.data.slice(0, 12) === "__CONDITION ") {
                 const condition = JSON.parse(message.data.slice(12, message.data.length));
-                console.log(condition);
                 this.users = condition.users;
-                this.users.countUsers = condition.countUsers;
                 this.messages = condition.messages;
-                this.ids = [];
-
-                for (const id in this.users) {
-                    this.ids.push(id);
-                }
-                this.currentUser = 0;
-            } else if (message.data.toString().slice(0, 1) === "�") {
-                if (this.currentUser < this.users.countUsers) {
-                    if (message.data.length > 1) {
-                        this.users[this.ids[this.currentUser]].photo = message;
-                    } else {
-                        this.users[this.ids[this.currentUser]].photo = undefined;
-                    }
-                    console.log(this.users);
-                    console.log(message.data);
-                    this.currentUser++;
-                }
-                if (this.currentUser === this.users.countUsers) {
-                    this.showChatWindow(this.users, this.messages)
-                }
+                this.id = condition.currentId;
+                this.showChatWindow(this.users, this.messages);
+            }
+            else if (message.data.slice(0, 4) === "_PN ") {
+                this.currentGetPhotoId = message.data.slice(4, message.data.length);
+            }
+            else if (message.data.slice(0, 1) === "�") {
+                this.users[this.currentGetPhotoId].photo = message.data;
+                this.addPhotoUser();
+            }
+            else if (message.data.slice(0, 11) === "__ADD_USER ") {
+                const userInfo = JSON.parse(message.data.toString().slice(11, message.data.length));
+                this.addUser(userInfo);
+            }
+            else if (message.data.slice(0, 14) === "__REMOVE_USER ") {
+                const removeId = message.data.toString().slice(14, message.data.length);
+                this.removeUser(removeId);
             }
             //console.log(message.data);
         })
@@ -72,35 +67,69 @@ export default class Chat {
     }
 
     showLoadingWindow(condition = {}) {
-        this.plaseInsertion.innerHTML = loadingTemplate();
+        this.plaseInsertionNode.innerHTML = loadingTemplate();
     }
 
     showChatWindow(users, messages) {
-        delete users.countUsers;
-        this.plaseInsertion.innerHTML = chatTemplate({users: users, messages: messages});
+        delete users.currentId;
+        this.plaseInsertionNode.innerHTML = chatTemplate({users: users, messages: messages});
 
-        this.inputMessageNode = this.plaseInsertion.querySelector('[data-role=input-message]');
-        this.sendMessageNode = this.plaseInsertion.querySelector('[data-role=send-message]');
+        this.inputMessageNode = this.plaseInsertionNode.querySelector('[data-role=input-message]');
+        this.sendMessageNode = this.plaseInsertionNode.querySelector('[data-role=send-message]');
 
-        this.messageWrapperNode = this.plaseInsertion.querySelector('[data-role=message-wrapper]');
+        this.messageListNode = this.plaseInsertionNode.querySelector('[data-role=message-list]');
 
         this.sendMessageNode.addEventListener('click', () => {
             const message = {
+                id: this.id,
                 text: this.inputMessageNode.value,
                 time: this.date.getHours() + ":" + this.date.getMinutes(),
                 userName: this.userName
             }
             this.socket.send("_ " + JSON.stringify(message));
             this.inputMessageNode.value = '';
-            //this.messageWrapperNode.lastElementChild.classList.add("message__block-my")
         });
     }
 
-    sendMessage() {
+    addPhotoUser() {
+        const photo = this.users[this.currentGetPhotoId].photo;
+        const blobObj = new Blob([atob(photo)], { type: "application/images" });
+        const src = URL.createObjectURL(blobObj);
 
+        const imgUserNodes = this.plaseInsertionNode.querySelectorAll(`[data-id=${this.currentGetPhotoId}] IMG`);
+
+        for (const node in imgUserNodes) {
+            node.src = src;
+        }
     }
 
     addMessage(message) {
-        this.messageWrapperNode.innerHTML += messageBlockTemplate({info: message});
+        this.messageListNode.innerHTML += messageBlockTemplate({info: message});
+        if (message.id === this.id) {
+            this.messageListNode.lastElementChild.classList.add("message__block-my");
+        }
+        const lastMessageSenderUserNode = this.plaseInsertionNode.querySelector(`li [data-id=${message.id}] [data-role=last-message]`);
+        if (message.text.length > 21) {
+            lastMessageSenderUserNode.textContent = message.text.slice(0, 18) + "...";
+        } else {
+            lastMessageSenderUserNode.textContent = message.text;
+        }
+    }
+
+    addUser(info) {
+        const infoNode = informationTemplate({text: info.userName + " присоединился"});
+        this.messageListNode.appendChild(infoNode);
+
+        const userNode = userTemplate({id: info.id, userName: info.userName});
+        const userList = this.plaseInsertionNode.querySelector('[data-role=user-list]');
+        userList.appendChild(userNode);
+    }
+
+    removeUser(id) {
+        const infoNode = informationTemplate({text: id + " вышел из чата"});
+        this.messageListNode.appendChild(infoNode);
+
+        const userNode = this.plaseInsertionNode.querySelector(`li [data-id=${id}]`);
+        this.plaseInsertionNode.removeChild(userNode);
     }
 }

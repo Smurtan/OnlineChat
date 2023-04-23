@@ -12,7 +12,6 @@ class Storage {
             this.messages = JSON.parse(fs.readFileSync(messagePath, 'utf8'));
         }
         this.users = {};
-        this.userId = 1;
         setTimeout(() => {
             const len = this.messages.length;
             if (len > 100) {
@@ -26,7 +25,6 @@ class Storage {
             userName: userName,
             photo: undefined
         };
-        console.log(this.users[id]);
     }
 
     addUserPhoto(id, photo) {
@@ -36,6 +34,7 @@ class Storage {
     addMessage(message) {
         message = JSON.parse(message);
         this.messages.push({
+            id: message.id,
             userName: message.userName,
             text: message.text,
             time: message.time
@@ -43,22 +42,14 @@ class Storage {
     }
 
     getUsers() {
-        const users = {};
-
-        for (const item in this.users) {
-            users[item] = {
-                userName: this.users[item].userName
-            };
-        }
-
-        return users;
+        return this.users;
     }
 
     getPhoto(id) {
         if (this.users[id].photo) {
             return this.users[id].photo;
         } else {
-            return "�";
+            return false;
         }
     }
 

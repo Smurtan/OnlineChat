@@ -38,19 +38,39 @@ webSocketServer.on('connection', (ws) => {
             const _message = message.toString().slice(2, message.length);
             storage.addMessage(_message);
 
-            for (const key in clients) {
-                clients[key].send(message.toString());
+            for (const id in clients) {
+                clients[id].send(message.toString());
             }
-        } else if (message.toString().slice(0, 15) === "__GET_CONDITION") {
+        }
+        else if (message.toString().slice(0, 16) === "__GET_CONDITION ") {
             const userName = message.toString().slice(16, message.length)
             storage.addUser(id, userName)
 
-            clients[id].send(`__CONDITION ${getCondition()}`);
-            for (let i = 1; i < currentId; i++) {
-                clients[id].send(storage.getPhoto(i));
+            clients[id].send(`__CONDITION ${getCondition(id)}`);
+
+            const userInfo = {
+                id: id,
+                userName: userName
+            };
+            for (const id in clients) {
+                clients[id].send("__ADD_USER " + JSON.stringify(userInfo));
             }
-        } else if (message.toString().slice(0, 1) === "�") {
+
+            for (const key in clients) {
+                clients[id].send("_PN " + key);
+                const photo = storage.getPhoto(key);
+                if (photo) {
+                    clients[key].send(photo);
+                }
+            }
+        }
+        else if (message.toString().slice(0, 1) === "�") {
             storage.addUserPhoto(id, message);
+
+            for (const key in clients) {
+                clients[key].send("_PN " + id);
+                clients[key].send(message);
+            }
         }
         //console.log('получено сообщение ' + message);
     })
@@ -58,15 +78,22 @@ webSocketServer.on('connection', (ws) => {
     ws.on('close', () => {
         console.log('соединение закрыто ' + id);
         delete clients[id];
+        for (const key in clients) {
+            clients[key].send("__REMOVE_USER " + id);
+        }
     })
 })
 
-function getCondition() {
+function getCondition(id) {
     const users = storage.getUsers();
-    console.log(users);
     const messages = storage.getMessages();
+
+    for (const id in users) {
+        users[id].id = id;
+    }
+
     const condition = {
-        countUsers: Object.keys(users).length,
+        currentId: id,
         users: users,
         messages: messages,
     }
