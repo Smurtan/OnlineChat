@@ -12,17 +12,20 @@ storage.addUser(1, "privet");
 storage.addUser(2, "poka");
 
 storage.addMessage(JSON.stringify({
-    userName: 'fgnh',
+    id: 1,
+    userName: 'privet',
     text: "Я пробую что то добавить",
     time: "16:32"
 }));
 storage.addMessage(JSON.stringify({
-    userName: 'fgnh',
+    id: 1,
+    userName: 'privet',
     text: "И сейчас",
     time: "16:32"
 }));
 storage.addMessage(JSON.stringify({
-    userName: 'fgnh',
+    id: 2,
+    userName: 'poka',
     text: "Сейчас тоже",
     time: "16:33"
 }));
@@ -52,15 +55,15 @@ webSocketServer.on('connection', (ws) => {
                 id: id,
                 userName: userName
             };
-            for (const id in clients) {
-                clients[id].send("__ADD_USER " + JSON.stringify(userInfo));
+            for (const key in clients) {
+                clients[key].send("__ADD_USER " + JSON.stringify(userInfo));
             }
 
             for (const key in clients) {
-                clients[id].send("_PN " + key);
                 const photo = storage.getPhoto(key);
                 if (photo) {
-                    clients[key].send(photo);
+                    clients[id].send("_PN " + key);
+                    clients[id].send(photo);
                 }
             }
         }
@@ -78,6 +81,7 @@ webSocketServer.on('connection', (ws) => {
     ws.on('close', () => {
         console.log('соединение закрыто ' + id);
         delete clients[id];
+        storage.removeUser(id);
         for (const key in clients) {
             clients[key].send("__REMOVE_USER " + id);
         }

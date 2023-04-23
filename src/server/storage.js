@@ -27,6 +27,10 @@ class Storage {
         };
     }
 
+    removeUser(id) {
+        delete this.users[id];
+    }
+
     addUserPhoto(id, photo) {
         this.users[id].photo = photo;
     }

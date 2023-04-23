@@ -78,6 +78,10 @@ li, h3, h4, p {
     grid-area: C;
     font-weight: 300;
     color: #7F91A4;
+    text-overflow: ellipsis;
+    max-width: 200px;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 /*==========================================================================================*/
@@ -114,6 +118,7 @@ li, h3, h4, p {
 
 .message {
     overflow-y: scroll;
+    overflow-x: hidden;
     display: flex;
     flex-wrap: nowrap;
     flex-direction: column;
@@ -167,6 +172,7 @@ li, h3, h4, p {
     max-width: 450px;
     float: left;
     clear: left;
+    /*word-break: break-word;*/
 }
 
 .message__time {
@@ -185,6 +191,13 @@ li, h3, h4, p {
     background-color: #2b5279;
     float: right;
     clear: both;
+}
+
+.message__information {
+    margin: 5px auto;
+    color: #7F91A4;
+    font-size: 16px;
+    line-height: 18px;
 }
 
 .entering {

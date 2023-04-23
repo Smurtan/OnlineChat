@@ -9,19 +9,16 @@
         </div>
         <ul class="side__user-list" data-role="user-list">
             {{#each users}}
-                {{> "./user.hbs" userName=this.userName id=this.id}}
+                {{> "./user.hbs" userName=this.userName photo=this.photo id=this.id}}
             {{/each}}
         </ul>
     </div>
     <section class="chat">
         <section class="header">
             <h3 class="header__title">Чат</h3>
-            <p class="header__text">2 участника</p>
+            <p class="header__text" data-role="count-user">2 участника</p>
         </section>
         <section class="message" data-role="message-list">
-            {{#each messages}}
-                {{> "./message-block.hbs" info=this}}
-            {{/each}}
         </section>
         <section class="entering">
             <textarea class="entering__input" type="text" placeholder="Введите сообщение..." data-role="input-message"></textarea>

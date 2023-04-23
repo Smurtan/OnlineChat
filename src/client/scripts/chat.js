@@ -5,6 +5,8 @@ import messageItemTemplate from "../templates/chat/message-item.hbs";
 import informationTemplate from "../templates/chat/information-message.hbs";
 import userTemplate from "../templates/chat/user.hbs";
 
+import Avatar from "../img/avatar.jpg";
+
 
 export default class Chat {
     constructor(userName, photo) {
@@ -42,17 +44,19 @@ export default class Chat {
             else if (message.data.slice(0, 4) === "_PN ") {
                 this.currentGetPhotoId = message.data.slice(4, message.data.length);
             }
-            else if (message.data.slice(0, 1) === "�") {
-                this.users[this.currentGetPhotoId].photo = message.data;
-                this.addPhotoUser();
-            }
             else if (message.data.slice(0, 11) === "__ADD_USER ") {
                 const userInfo = JSON.parse(message.data.toString().slice(11, message.data.length));
-                this.addUser(userInfo);
+                if (this.id !== userInfo.id) {
+                    this.addUser(userInfo);
+                }
             }
             else if (message.data.slice(0, 14) === "__REMOVE_USER ") {
                 const removeId = message.data.toString().slice(14, message.data.length);
                 this.removeUser(removeId);
+            }
+            else if (message.data.type === "") {
+                this.users[this.currentGetPhotoId].photo = URL.createObjectURL(message.data);
+                this.addPhotoUser();
             }
             //console.log(message.data);
         })
@@ -72,64 +76,94 @@ export default class Chat {
 
     showChatWindow(users, messages) {
         delete users.currentId;
-        this.plaseInsertionNode.innerHTML = chatTemplate({users: users, messages: messages});
+        for (const key in users) {
+            users[key].photo = Avatar;
+        }
+        this.plaseInsertionNode.innerHTML = chatTemplate({users: users});
 
         this.inputMessageNode = this.plaseInsertionNode.querySelector('[data-role=input-message]');
         this.sendMessageNode = this.plaseInsertionNode.querySelector('[data-role=send-message]');
 
         this.messageListNode = this.plaseInsertionNode.querySelector('[data-role=message-list]');
 
+        for (const mes of messages) {
+            this.addMessage(mes);
+        }
+
+        this.changeCountUsers();
+
         this.sendMessageNode.addEventListener('click', () => {
-            const message = {
-                id: this.id,
-                text: this.inputMessageNode.value,
-                time: this.date.getHours() + ":" + this.date.getMinutes(),
-                userName: this.userName
+            if (this.inputMessageNode.value) {
+                const hour = this.date.getHours().length === 1 ? '0' + this.date.getHours() : this.date.getHours();
+                const minutes = this.date.getMinutes().length === 1 ? '0' + this.date.getMinutes() : this.date.getMinutes();
+                const message = {
+                    id: this.id,
+                    text: this.inputMessageNode.value,
+                    time: hour + ":" + minutes,
+                    userName: this.userName
+                }
+                this.socket.send("_ " + JSON.stringify(message));
+                this.inputMessageNode.value = '';
             }
-            this.socket.send("_ " + JSON.stringify(message));
-            this.inputMessageNode.value = '';
         });
     }
 
+    changeCountUsers() {
+        const countUsersNode = this.plaseInsertionNode.querySelector('[data-role=count-user]');
+        countUsersNode.textContent = Object.keys(this.users).length + ' участников';
+    }
+
     addPhotoUser() {
-        const photo = this.users[this.currentGetPhotoId].photo;
-        const blobObj = new Blob([atob(photo)], { type: "application/images" });
-        const src = URL.createObjectURL(blobObj);
+        const imgUserNodes = this.plaseInsertionNode.querySelectorAll(`[data-id='${this.currentGetPhotoId}'] IMG`);
 
-        const imgUserNodes = this.plaseInsertionNode.querySelectorAll(`[data-id=${this.currentGetPhotoId}] IMG`);
-
-        for (const node in imgUserNodes) {
-            node.src = src;
+        for (const node of imgUserNodes) {
+            node.src = this.users[this.currentGetPhotoId].photo;
         }
+        console.log(this.users);
     }
 
     addMessage(message) {
-        this.messageListNode.innerHTML += messageBlockTemplate({info: message});
-        if (message.id === this.id) {
-            this.messageListNode.lastElementChild.classList.add("message__block-my");
-        }
-        const lastMessageSenderUserNode = this.plaseInsertionNode.querySelector(`li [data-id=${message.id}] [data-role=last-message]`);
-        if (message.text.length > 21) {
-            lastMessageSenderUserNode.textContent = message.text.slice(0, 18) + "...";
+        if (message.id === this.lastMessageId) {
+            const messageBlockNodes = this.messageListNode.querySelectorAll('ul[data-role=block-list]');
+            messageBlockNodes[messageBlockNodes.length - 1].innerHTML += messageItemTemplate({text: message.text, time: message.time});
         } else {
+            let photo = Avatar;
+            if (this.users[message.id]) {
+                photo = this.users[message.id].photo;
+            }
+            this.messageListNode.innerHTML += messageBlockTemplate({info: message, photo: photo});
+            if (message.id === this.id) {
+                this.messageListNode.lastElementChild.classList.add("message__block-my");
+            }
+            this.lastMessageId = message.id;
+        }
+        this.changeCountUsers();
+        const lastMessageSenderUserNode = this.plaseInsertionNode.querySelector(`li[data-id='${message.id}'] [data-role=last-message]`);
+        if (lastMessageSenderUserNode) {
             lastMessageSenderUserNode.textContent = message.text;
         }
+
+        this.messageListNode.scrollTop = this.messageListNode.scrollHeight;
     }
 
     addUser(info) {
         const infoNode = informationTemplate({text: info.userName + " присоединился"});
-        this.messageListNode.appendChild(infoNode);
+        this.messageListNode.innerHTML += infoNode;
 
-        const userNode = userTemplate({id: info.id, userName: info.userName});
+        const userNode = userTemplate({id: info.id, userName: info.userName, photo: Avatar});
         const userList = this.plaseInsertionNode.querySelector('[data-role=user-list]');
-        userList.appendChild(userNode);
+        userList.innerHTML += userNode;
+        this.users[info.id] = info;
+        this.users[info.id].photo = Avatar;
     }
 
     removeUser(id) {
-        const infoNode = informationTemplate({text: id + " вышел из чата"});
-        this.messageListNode.appendChild(infoNode);
+        const infoNode = informationTemplate({text: this.users[id].userName + " вышел из чата"});
+        this.messageListNode.innerHTML += infoNode;
+        delete this.users[id];
 
-        const userNode = this.plaseInsertionNode.querySelector(`li [data-id=${id}]`);
-        this.plaseInsertionNode.removeChild(userNode);
+        const userList = this.plaseInsertionNode.querySelector('[data-role=user-list]');
+        const userNode = this.plaseInsertionNode.querySelector(`li[data-id='${id}']`);
+        userList.removeChild(userNode);
     }
 }

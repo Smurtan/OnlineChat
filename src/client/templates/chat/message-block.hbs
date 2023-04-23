@@ -1,8 +1,8 @@
 <div class="message__block" data-id="{{info.id}}">
-    <img class="message__block-logo" src="../../img/avatar.jpg">
+    <img class="message__block-logo" src="{{photo}}">
     <div class="message__block-text">
         <h4 class="message__block-title">{{info.userName}}</h4>
-        <ul class="message__block-list">
+        <ul class="message__block-list" data-role="block-list">
             {{> "./message-item.hbs" text=info.text time=info.time}}
         </ul>
     </div>
