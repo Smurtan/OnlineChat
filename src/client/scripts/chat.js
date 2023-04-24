@@ -6,6 +6,7 @@ import informationTemplate from "../templates/chat/information-message.hbs";
 import userTemplate from "../templates/chat/user.hbs";
 
 import Avatar from "../img/avatar.jpg";
+import PhotoUser from "../img/photo.png";
 
 
 export default class Chat {
@@ -79,7 +80,7 @@ export default class Chat {
         for (const key in users) {
             users[key].photo = Avatar;
         }
-        this.plaseInsertionNode.innerHTML = chatTemplate({users: users});
+        this.plaseInsertionNode.innerHTML = chatTemplate({photo: PhotoUser, users: users, userName: this.userName});
 
         this.inputMessageNode = this.plaseInsertionNode.querySelector('[data-role=input-message]');
         this.sendMessageNode = this.plaseInsertionNode.querySelector('[data-role=send-message]');
@@ -106,6 +107,36 @@ export default class Chat {
                 this.inputMessageNode.value = '';
             }
         });
+
+        this.modalWindowNode = this.plaseInsertionNode.querySelector('[data-role=modal-window]');
+        this.modalWindowNode.classList.add("hidden");
+
+        this.modalWindowNode.querySelector('[data-role=modal-close]').addEventListener('click', () => {
+            this.modalWindowNode.classList.add("hidden");
+            if (this.photo) {
+                this.users[this.id].photo = URL.createObjectURL(this.photo);
+                this.socket.send(this.photo);
+                this.addPhotoUser();
+            }
+        })
+
+        this.modalImageNode = this.modalWindowNode.querySelector('[data-role=photo-img]');
+
+        this.modalWindowNode.querySelector('[data-role=choose_img]').addEventListener('change', (e) => {
+            this.photo = e.target.files[0];
+            this.modalImageNode.src = URL.createObjectURL(e.target.files[0]);
+        });
+
+        this.userListNode = this.plaseInsertionNode.querySelector('[data-role=user-list]');
+        const myUserNode = this.userListNode.querySelector(`[data-id='${this.id}']`);
+
+        this.userListNode.removeChild(myUserNode);
+        this.userListNode.insertBefore(myUserNode, this.userListNode.firstElementChild);
+
+        myUserNode.addEventListener('click', (e) => {
+            this.modalWindowNode.classList.remove("hidden");
+            this.modalImageNode.src = this.users[this.id].photo;
+        })
     }
 
     changeCountUsers() {
@@ -119,7 +150,6 @@ export default class Chat {
         for (const node of imgUserNodes) {
             node.src = this.users[this.currentGetPhotoId].photo;
         }
-        console.log(this.users);
     }
 
     addMessage(message) {
@@ -151,10 +181,14 @@ export default class Chat {
         this.messageListNode.innerHTML += infoNode;
 
         const userNode = userTemplate({id: info.id, userName: info.userName, photo: Avatar});
-        const userList = this.plaseInsertionNode.querySelector('[data-role=user-list]');
-        userList.innerHTML += userNode;
+        this.userListNode.innerHTML += userNode;
         this.users[info.id] = info;
         this.users[info.id].photo = Avatar;
+
+        this.userListNode.firstElementChild.addEventListener('click', (e) => {
+            this.modalWindowNode.classList.remove("hidden");
+            this.modalImageNode.src = this.users[this.id].photo;
+        })
     }
 
     removeUser(id) {
