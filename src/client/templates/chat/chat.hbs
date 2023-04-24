@@ -16,7 +16,7 @@
     <section class="chat">
         <section class="header">
             <h3 class="header__title">Чат</h3>
-            <p class="header__text" data-role="count-user">2 участника</p>
+            <p class="header__text" data-role="count-user">{{countUser}}</p>
         </section>
         <section class="message" data-role="message-list">
         </section>
@@ -24,5 +24,21 @@
             <textarea class="entering__input" type="text" placeholder="Введите сообщение..." data-role="input-message"></textarea>
             <button class="entering__button" data-role="send-message">Отправить</button>
         </section>
+    </section>
+    <section class="modal" data-role="modal-window">
+        <div class="modal__window">
+            <h3 class="modal__title">Загрузка фото</h3>
+            <div class="modal__close" data-role="modal-close">
+                <svg width="16" height="17" viewBox="0 0 16 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M14.4142 0.247925L15.8284 1.66214L1.4349 16.0557L0.0206874 14.6415L14.4142 0.247925Z" fill="#747E87" />
+                    <path d="M1.41421 0.247925L0 1.66214L14.3935 16.0557L15.8077 14.6415L1.41421 0.247925Z" fill="#747E87" />
+                </svg>
+            </div>
+            <input class="photo__input" id="input__photo" type="file" name="photo" accept="image/*" data-role="choose_img"/>
+            <label class="photo__input-button modal__body" for="input__photo">
+                <img src="{{photo}}" alt="Фото пользователя" class="modal__photo" data-role="photo-img">
+                <p class="modal__username">{{userName}}</p>
+            </label>
+        </div>
     </section>
 </section>

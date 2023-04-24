@@ -19,9 +19,13 @@ export default class Authorisation {
 
         this.userNameNode.value = userName;
 
-        this.userNameNode.addEventListener('change', () => {this.setUserName()})
+        this.userNameNode.addEventListener('change', () => {
+            this.setUserName()
+        })
 
-        signInButtonNode.addEventListener('click', () => {this.setUserName()})
+        signInButtonNode.addEventListener('click', () => {
+            this.setUserName()
+        })
     }
 
     showChangePhotoWindow() {
@@ -32,18 +36,22 @@ export default class Authorisation {
         const inputImageNode = this.plaseInsertion.querySelector('[data-role=choose_img]');
         const showImageNode = this.plaseInsertion.querySelector('[data-role=show_img]');
 
-        cancelButtonNode.addEventListener('click', (e) => {
+        cancelButtonNode.addEventListener('click', () => {
             this.showAuthorisationWindow(this.userName);
         })
 
-        saveButtonNode.addEventListener('click', (e) => {
+        saveButtonNode.addEventListener('click', () => {
 
             this.signIn(this.userName, this.photo);
         })
 
         inputImageNode.addEventListener('change', (e) => {
-            this.photo = e.target.files[0];
-            showImageNode.src = URL.createObjectURL(e.target.files[0]);
+            if (e.target.files[0].size > 300000) {
+                alert("Изображение слишком большое!")
+            } else {
+                this.photo = e.target.files[0];
+                showImageNode.src = URL.createObjectURL(e.target.files[0]);
+            }
         })
     }
 

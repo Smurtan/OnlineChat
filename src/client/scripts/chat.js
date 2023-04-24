@@ -6,6 +6,7 @@ import informationTemplate from "../templates/chat/information-message.hbs";
 import userTemplate from "../templates/chat/user.hbs";
 
 import Avatar from "../img/avatar.jpg";
+import PhotoUser from "../img/photo.png";
 
 
 export default class Chat {
@@ -24,7 +25,7 @@ export default class Chat {
     async login() {
         this.socket = await new WebSocket("ws://localhost:8080");
 
-        this.socket.addEventListener('open', (e) => {
+        this.socket.addEventListener('open', () => {
             this.socket.send("__GET_CONDITION " + this.userName);
             this.socket.send(this.photo);
         })
@@ -65,12 +66,12 @@ export default class Chat {
             console.log('ОШИБКА + ' + e);
         })
 
-        this.socket.addEventListener('close', (e) => {
+        this.socket.addEventListener('close', () => {
             console.log('Соединение закрыто!');
         })
     }
 
-    showLoadingWindow(condition = {}) {
+    showLoadingWindow() {
         this.plaseInsertionNode.innerHTML = loadingTemplate();
     }
 
@@ -79,7 +80,7 @@ export default class Chat {
         for (const key in users) {
             users[key].photo = Avatar;
         }
-        this.plaseInsertionNode.innerHTML = chatTemplate({users: users});
+        this.plaseInsertionNode.innerHTML = chatTemplate({photo: PhotoUser, users: users, userName: this.userName, countUser: this.declinationCountUser(Object.keys(users).length)});
 
         this.inputMessageNode = this.plaseInsertionNode.querySelector('[data-role=input-message]');
         this.sendMessageNode = this.plaseInsertionNode.querySelector('[data-role=send-message]');
@@ -106,11 +107,45 @@ export default class Chat {
                 this.inputMessageNode.value = '';
             }
         });
+
+        this.modalWindowNode = this.plaseInsertionNode.querySelector('[data-role=modal-window]');
+        this.modalWindowNode.classList.add("hidden");
+
+        this.modalWindowNode.querySelector('[data-role=modal-close]').addEventListener('click', () => {
+            this.modalWindowNode.classList.add("hidden");
+            if (this.photo) {
+                this.users[this.id].photo = URL.createObjectURL(this.photo);
+                this.socket.send(this.photo);
+                this.addPhotoUser();
+            }
+        })
+
+        this.modalImageNode = this.modalWindowNode.querySelector('[data-role=photo-img]');
+
+        this.modalWindowNode.querySelector('[data-role=choose_img]').addEventListener('change', (e) => {
+            if (e.target.files[0].size > 300000) {
+                alert("Изображение слишком большое!")
+            } else {
+                this.photo = e.target.files[0];
+                this.modalImageNode.src = URL.createObjectURL(e.target.files[0]);
+            }
+        });
+
+        this.userListNode = this.plaseInsertionNode.querySelector('[data-role=user-list]');
+        const myUserNode = this.userListNode.querySelector(`[data-id='${this.id}']`);
+
+        this.userListNode.removeChild(myUserNode);
+        this.userListNode.insertBefore(myUserNode, this.userListNode.firstElementChild);
+
+        myUserNode.addEventListener('click', () => {
+            this.modalWindowNode.classList.remove("hidden");
+            this.modalImageNode.src = this.users[this.id].photo;
+        })
     }
 
     changeCountUsers() {
         const countUsersNode = this.plaseInsertionNode.querySelector('[data-role=count-user]');
-        countUsersNode.textContent = Object.keys(this.users).length + ' участников';
+        countUsersNode.textContent = this.declinationCountUser(Object.keys(this.users).length);
     }
 
     addPhotoUser() {
@@ -119,7 +154,6 @@ export default class Chat {
         for (const node of imgUserNodes) {
             node.src = this.users[this.currentGetPhotoId].photo;
         }
-        console.log(this.users);
     }
 
     addMessage(message) {
@@ -151,10 +185,14 @@ export default class Chat {
         this.messageListNode.innerHTML += infoNode;
 
         const userNode = userTemplate({id: info.id, userName: info.userName, photo: Avatar});
-        const userList = this.plaseInsertionNode.querySelector('[data-role=user-list]');
-        userList.innerHTML += userNode;
+        this.userListNode.innerHTML += userNode;
         this.users[info.id] = info;
         this.users[info.id].photo = Avatar;
+
+        this.userListNode.firstElementChild.addEventListener('click', () => {
+            this.modalWindowNode.classList.remove("hidden");
+            this.modalImageNode.src = this.users[this.id].photo;
+        })
     }
 
     removeUser(id) {
@@ -165,5 +203,16 @@ export default class Chat {
         const userList = this.plaseInsertionNode.querySelector('[data-role=user-list]');
         const userNode = this.plaseInsertionNode.querySelector(`li[data-id='${id}']`);
         userList.removeChild(userNode);
+    }
+
+    declinationCountUser(count) {
+        console.log(count % 10);
+        if (count % 10 === 1 && count !== 11) {
+            return count + ' участник';
+        } else if ((count % 10 === 2 || count % 10 === 3 || count % 10 === 4) && (count < 11 || count > 19)) {
+            return count + ' участника';
+        } else {
+            return count + ' участников';
+        }
     }
 }
