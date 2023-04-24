@@ -25,7 +25,7 @@ export default class Chat {
     async login() {
         this.socket = await new WebSocket("ws://localhost:8080");
 
-        this.socket.addEventListener('open', (e) => {
+        this.socket.addEventListener('open', () => {
             this.socket.send("__GET_CONDITION " + this.userName);
             this.socket.send(this.photo);
         })
@@ -66,12 +66,12 @@ export default class Chat {
             console.log('ОШИБКА + ' + e);
         })
 
-        this.socket.addEventListener('close', (e) => {
+        this.socket.addEventListener('close', () => {
             console.log('Соединение закрыто!');
         })
     }
 
-    showLoadingWindow(condition = {}) {
+    showLoadingWindow() {
         this.plaseInsertionNode.innerHTML = loadingTemplate();
     }
 
@@ -80,7 +80,7 @@ export default class Chat {
         for (const key in users) {
             users[key].photo = Avatar;
         }
-        this.plaseInsertionNode.innerHTML = chatTemplate({photo: PhotoUser, users: users, userName: this.userName});
+        this.plaseInsertionNode.innerHTML = chatTemplate({photo: PhotoUser, users: users, userName: this.userName, countUser: this.declinationCountUser(Object.keys(users).length)});
 
         this.inputMessageNode = this.plaseInsertionNode.querySelector('[data-role=input-message]');
         this.sendMessageNode = this.plaseInsertionNode.querySelector('[data-role=send-message]');
@@ -123,8 +123,12 @@ export default class Chat {
         this.modalImageNode = this.modalWindowNode.querySelector('[data-role=photo-img]');
 
         this.modalWindowNode.querySelector('[data-role=choose_img]').addEventListener('change', (e) => {
-            this.photo = e.target.files[0];
-            this.modalImageNode.src = URL.createObjectURL(e.target.files[0]);
+            if (e.target.files[0].size > 300000) {
+                alert("Изображение слишком большое!")
+            } else {
+                this.photo = e.target.files[0];
+                this.modalImageNode.src = URL.createObjectURL(e.target.files[0]);
+            }
         });
 
         this.userListNode = this.plaseInsertionNode.querySelector('[data-role=user-list]');
@@ -133,7 +137,7 @@ export default class Chat {
         this.userListNode.removeChild(myUserNode);
         this.userListNode.insertBefore(myUserNode, this.userListNode.firstElementChild);
 
-        myUserNode.addEventListener('click', (e) => {
+        myUserNode.addEventListener('click', () => {
             this.modalWindowNode.classList.remove("hidden");
             this.modalImageNode.src = this.users[this.id].photo;
         })
@@ -141,7 +145,7 @@ export default class Chat {
 
     changeCountUsers() {
         const countUsersNode = this.plaseInsertionNode.querySelector('[data-role=count-user]');
-        countUsersNode.textContent = Object.keys(this.users).length + ' участников';
+        countUsersNode.textContent = this.declinationCountUser(Object.keys(this.users).length);
     }
 
     addPhotoUser() {
@@ -185,7 +189,7 @@ export default class Chat {
         this.users[info.id] = info;
         this.users[info.id].photo = Avatar;
 
-        this.userListNode.firstElementChild.addEventListener('click', (e) => {
+        this.userListNode.firstElementChild.addEventListener('click', () => {
             this.modalWindowNode.classList.remove("hidden");
             this.modalImageNode.src = this.users[this.id].photo;
         })
@@ -199,5 +203,16 @@ export default class Chat {
         const userList = this.plaseInsertionNode.querySelector('[data-role=user-list]');
         const userNode = this.plaseInsertionNode.querySelector(`li[data-id='${id}']`);
         userList.removeChild(userNode);
+    }
+
+    declinationCountUser(count) {
+        console.log(count % 10);
+        if (count % 10 === 1 && count !== 11) {
+            return count + ' участник';
+        } else if ((count % 10 === 2 || count % 10 === 3 || count % 10 === 4) && (count < 11 || count > 19)) {
+            return count + ' участника';
+        } else {
+            return count + ' участников';
+        }
     }
 }

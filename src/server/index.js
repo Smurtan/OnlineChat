@@ -8,28 +8,6 @@ const webSocketServer = new WebSocketServer.Server({port: 8080});
 
 const storage = new Storage();
 
-storage.addUser(1, "privet");
-storage.addUser(2, "poka");
-
-storage.addMessage(JSON.stringify({
-    id: 1,
-    userName: 'privet',
-    text: "Я пробую что то добавить",
-    time: "16:32"
-}));
-storage.addMessage(JSON.stringify({
-    id: 1,
-    userName: 'privet',
-    text: "И сейчас",
-    time: "16:32"
-}));
-storage.addMessage(JSON.stringify({
-    id: 2,
-    userName: 'poka',
-    text: "Сейчас тоже",
-    time: "16:33"
-}));
-
 webSocketServer.on('connection', (ws) => {
     const id = currentId++;
     clients[id] = ws;
