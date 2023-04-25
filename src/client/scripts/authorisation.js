@@ -4,6 +4,7 @@ import photoTemplate from "../templates/photo/photo.hbs";
 import Image from "../img/import.png";
 
 import Chat from "./chat.js";
+import {once} from "@babel/core/lib/gensync-utils/functional";
 
 export default class Authorisation {
     constructor() {
@@ -41,9 +42,14 @@ export default class Authorisation {
         })
 
         saveButtonNode.addEventListener('click', () => {
-
             this.signIn(this.userName, this.photo);
         })
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Enter') {
+                this.signIn(this.userName, this.photo);
+            }
+        }, {once: true})
 
         inputImageNode.addEventListener('change', (e) => {
             if (e.target.files[0].size > 300000) {
@@ -63,7 +69,8 @@ export default class Authorisation {
         this.userName = this.userNameNode.value;
         if (this.userName.length > 0) {
             this.showChangePhotoWindow();
+        } else {
+            this.userNameNode.classList.add('free__nik');
         }
-        // Добавить ошибку с отсутствием ника
     }
 }

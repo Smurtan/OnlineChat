@@ -61,6 +61,10 @@
     border-bottom-color: #5188C0;
 }
 
+.free__nik {
+    border-bottom-color: #bd2020;
+}
+
 .sign__btn {
     text-transform: uppercase;
     border: none;

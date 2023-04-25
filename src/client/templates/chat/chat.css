@@ -35,10 +35,12 @@ li, h3, h4, p {
     border-radius: 20px 0 0 20px;
     font-size: 16px;
     line-height: 18px;
+    transition: all ease .5s;
 }
 
 .side__burger {
     margin-left: 8px;
+    width: 30px;
 }
 
 .side__user-list {
@@ -325,3 +327,5 @@ li, h3, h4, p {
 .hidden {
     display: none;
 }
+
+
