@@ -14,6 +14,9 @@ export default class Chat {
         this.userName = userName;
         this.photo = photo;
 
+        this.shift = false;
+        this.burger = false;
+
         this.date = new Date();
 
         this.plaseInsertionNode = document.getElementById("insertion");
@@ -94,19 +97,52 @@ export default class Chat {
         this.changeCountUsers();
 
         this.sendMessageNode.addEventListener('click', () => {
-            if (this.inputMessageNode.value) {
-                const hour = this.date.getHours().length === 1 ? '0' + this.date.getHours() : this.date.getHours();
-                const minutes = this.date.getMinutes().length === 1 ? '0' + this.date.getMinutes() : this.date.getMinutes();
-                const message = {
-                    id: this.id,
-                    text: this.inputMessageNode.value,
-                    time: hour + ":" + minutes,
-                    userName: this.userName
-                }
-                this.socket.send("_ " + JSON.stringify(message));
-                this.inputMessageNode.value = '';
+            if (this.inputMessageNode.value.length > 0) {
+                let that = this;
+                this.sendMessage(that);
             }
         });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Enter' && !this.shift && this.inputMessageNode.value.length > 0) {
+                e.preventDefault();
+                let that = this;
+                this.sendMessage(that);
+            }
+        })
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'shiftKey') {
+                this.shift = true;
+            }
+        })
+
+        document.addEventListener('keyup', (e) => {
+            if (e.code === 'shiftKey') {
+                this.shift = false;
+            }
+        })
+
+        const burgerNode = this.plaseInsertionNode.querySelector('[data-role=toggle-users]');
+
+        this.sideNode = this.plaseInsertionNode.querySelector('[data-role=sidebar]');
+        this.nikNode = this.sideNode.querySelector("H4");
+        this.lastMessageNode = this.sideNode.querySelector("[data-role=last-message]")
+
+        burgerNode.addEventListener('click', (e) => {
+            if (!this.burger) {
+                this.sideNode.style.maxWidth = "80px";
+                this.nikNode.classList.add('hidden');
+                this.lastMessageNode.classList.add('hidden');
+                this.burger = true;
+            } else {
+                this.sideNode.style.maxWidth = "300px";
+                this.sideNode.style.width = "100%";
+                this.nikNode.classList.remove('hidden');
+                this.lastMessageNode.classList.remove('hidden');
+                this.burger = false;
+            }
+        })
 
         this.modalWindowNode = this.plaseInsertionNode.querySelector('[data-role=modal-window]');
         this.modalWindowNode.classList.add("hidden");
@@ -117,6 +153,17 @@ export default class Chat {
                 this.users[this.id].photo = URL.createObjectURL(this.photo);
                 this.socket.send(this.photo);
                 this.addPhotoUser();
+            }
+        })
+
+        this.modalWindowNode.addEventListener('click', (e) => {
+            if (e.target.dataset.role === 'modal-window') {
+                this.modalWindowNode.classList.add("hidden");
+                if (this.photo) {
+                    this.users[this.id].photo = URL.createObjectURL(this.photo);
+                    this.socket.send(this.photo);
+                    this.addPhotoUser();
+                }
             }
         })
 
@@ -141,6 +188,19 @@ export default class Chat {
             this.modalWindowNode.classList.remove("hidden");
             this.modalImageNode.src = this.users[this.id].photo;
         })
+    }
+
+    sendMessage(that) {
+        const hour = that.date.getHours().length === 1 ? '0' + that.date.getHours() : that.date.getHours();
+        const minutes = that.date.getMinutes().length === 1 ? '0' + that.date.getMinutes() : that.date.getMinutes();
+        const message = {
+            id: that.id,
+            text: that.inputMessageNode.value,
+            time: hour + ":" + minutes,
+            userName: that.userName
+        }
+        that.socket.send("_ " + JSON.stringify(message));
+        that.inputMessageNode.value = '';
     }
 
     changeCountUsers() {
@@ -171,7 +231,6 @@ export default class Chat {
             }
             this.lastMessageId = message.id;
         }
-        this.changeCountUsers();
         const lastMessageSenderUserNode = this.plaseInsertionNode.querySelector(`li[data-id='${message.id}'] [data-role=last-message]`);
         if (lastMessageSenderUserNode) {
             lastMessageSenderUserNode.textContent = message.text;
@@ -193,6 +252,7 @@ export default class Chat {
             this.modalWindowNode.classList.remove("hidden");
             this.modalImageNode.src = this.users[this.id].photo;
         })
+        this.changeCountUsers();
     }
 
     removeUser(id) {
@@ -206,7 +266,6 @@ export default class Chat {
     }
 
     declinationCountUser(count) {
-        console.log(count % 10);
         if (count % 10 === 1 && count !== 11) {
             return count + ' участник';
         } else if ((count % 10 === 2 || count % 10 === 3 || count % 10 === 4) && (count < 11 || count > 19)) {
