@@ -191,8 +191,8 @@ export default class Chat {
     }
 
     sendMessage(that) {
-        const hour = that.date.getHours().length === 1 ? '0' + that.date.getHours() : that.date.getHours();
-        const minutes = that.date.getMinutes().length === 1 ? '0' + that.date.getMinutes() : that.date.getMinutes();
+        const hour = Math.round(that.date.getHours() / 10) === 0 ? '0' + that.date.getHours() : that.date.getHours();
+        const minutes = Math.round(that.date.getMinutes() / 10) === 0 ? '0' + that.date.getMinutes() : that.date.getMinutes();
         const message = {
             id: that.id,
             text: that.inputMessageNode.value,

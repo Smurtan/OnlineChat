@@ -20,15 +20,17 @@ class Storage {
         },1800000)
     }
 
-    addUser(id, userName) {
+    addUser(id, userName, photo) {
         this.users[id] = {
+            id: id,
             userName: userName,
-            photo: undefined
+            photo: photo,
+            active: true
         };
     }
 
-    removeUser(id) {
-        delete this.users[id];
+    changeState(id) {
+        this.users[id].active = !this.users[id].active;
     }
 
     addUserPhoto(id, photo) {
@@ -46,6 +48,23 @@ class Storage {
     }
 
     getUsers() {
+        const users = {};
+
+        for (const id in this.users) {
+            if (this.users[id].active) {
+                users[id] = {
+                    id: id,
+                    userName: this.users[id].userName,
+                    photo: this.users[id].photo,
+                    active: this.users[id].active
+                }
+            }
+        }
+
+        return users;
+    }
+
+    getAllUsers() {
         return this.users;
     }
 
