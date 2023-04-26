@@ -37,30 +37,27 @@ export default class Chat {
             if (message.data.slice(0, 2) === "_ ") {
                 const _message = JSON.parse(message.data.toString().slice(2, message.data.length));
                 this.addMessage(_message);
-            }
-            else if (message.data.slice(0, 12) === "__CONDITION ") {
+            } else if (message.data.slice(0, 12) === "__CONDITION ") {
                 const condition = JSON.parse(message.data.slice(12, message.data.length));
                 this.users = condition.users;
                 this.messages = condition.messages;
-                this.id = condition.currentId;
+                this.id = condition.currentId.toString();
                 this.showChatWindow(this.users, this.messages);
-            }
-            else if (message.data.slice(0, 4) === "_PN ") {
+            } else if (message.data.slice(0, 4) === "_PN ") {
                 this.currentGetPhotoId = message.data.slice(4, message.data.length);
-            }
-            else if (message.data.slice(0, 11) === "__ADD_USER ") {
+            } else if (message.data.slice(0, 11) === "__ADD_USER ") {
                 const userInfo = JSON.parse(message.data.toString().slice(11, message.data.length));
-                if (this.id !== userInfo.id) {
+                if (this.id !== userInfo.id.toString()) {
                     this.addUser(userInfo);
                 }
-            }
-            else if (message.data.slice(0, 14) === "__REMOVE_USER ") {
+            } else if (message.data.slice(0, 14) === "__REMOVE_USER ") {
                 const removeId = message.data.toString().slice(14, message.data.length);
                 this.removeUser(removeId);
-            }
-            else if (message.data.type === "") {
-                this.users[this.currentGetPhotoId].photo = URL.createObjectURL(message.data);
-                this.addPhotoUser();
+            } else if (message.data.type === "") {
+                if (message.data.size > 0) {
+                    this.users[this.currentGetPhotoId].photo = URL.createObjectURL(message.data);
+                    this.addPhotoUser();
+                }
             }
             //console.log(message.data);
         })
@@ -83,7 +80,12 @@ export default class Chat {
         for (const key in users) {
             users[key].photo = Avatar;
         }
-        this.plaseInsertionNode.innerHTML = chatTemplate({photo: PhotoUser, users: users, userName: this.userName, countUser: this.declinationCountUser(Object.keys(users).length)});
+        this.plaseInsertionNode.innerHTML = chatTemplate({
+            photo: PhotoUser,
+            users: users,
+            userName: this.userName,
+            countUser: this.declinationCountUser(Object.keys(users).length)
+        });
 
         this.inputMessageNode = this.plaseInsertionNode.querySelector('[data-role=input-message]');
         this.sendMessageNode = this.plaseInsertionNode.querySelector('[data-role=send-message]');
@@ -130,6 +132,7 @@ export default class Chat {
         this.lastMessageNode = this.sideNode.querySelector("[data-role=last-message]")
 
         burgerNode.addEventListener('click', (e) => {
+            clearTimeout(this.timer);
             if (!this.burger) {
                 this.sideNode.style.maxWidth = "80px";
                 this.nikNode.classList.add('hidden');
@@ -138,8 +141,10 @@ export default class Chat {
             } else {
                 this.sideNode.style.maxWidth = "300px";
                 this.sideNode.style.width = "100%";
-                this.nikNode.classList.remove('hidden');
-                this.lastMessageNode.classList.remove('hidden');
+                this.timer = setTimeout(() => {
+                    this.nikNode.classList.remove('hidden');
+                    this.lastMessageNode.classList.remove('hidden');
+                }, 300);
                 this.burger = false;
             }
         })
@@ -171,7 +176,7 @@ export default class Chat {
 
         this.modalWindowNode.querySelector('[data-role=choose_img]').addEventListener('change', (e) => {
             if (e.target.files[0].size > 300000) {
-                alert("Изображение слишком большое!")
+                alert("Изображение слишком большое!");
             } else {
                 this.photo = e.target.files[0];
                 this.modalImageNode.src = URL.createObjectURL(e.target.files[0]);
@@ -188,6 +193,50 @@ export default class Chat {
             this.modalWindowNode.classList.remove("hidden");
             this.modalImageNode.src = this.users[this.id].photo;
         })
+
+        document.addEventListener('dragover', e => {
+            e.preventDefault()
+        })
+
+        document.addEventListener('drop', e => {
+            e.preventDefault();
+
+            if (this.getCurrentUser(e.target, this.id)) {
+                const dt = e.dataTransfer;
+
+                if (dt.files && dt.files.length) {
+                    console.log('есть контакт')
+                    if (dt.files.size > 300000) {
+                        alert("Изображение слишком большое!");
+                    } else {
+                        for (const file of dt.files) {
+                            const reader = new FileReader();
+
+                            reader.readAsDataURL(file);
+                            reader.addEventListener('load', () => {
+                                this.photo = file;
+                                this.modalImageNode.src = reader.result;
+                                this.users[this.id].photo = reader.result;
+                                this.socket.send(this.photo);
+                                this.addPhotoUser();
+                            })
+                        }
+                    }
+                }
+            }
+        })
+    }
+
+    getCurrentUser(from, id) {
+        do {
+            console.log(from.dataset);
+            if (from.dataset && from.dataset.id === id) {
+                console.log('Есть картинка');
+                return from
+            }
+        } while (from = from.parentNode)
+
+        return null;
     }
 
     sendMessage(that) {
@@ -219,7 +268,10 @@ export default class Chat {
     addMessage(message) {
         if (message.id === this.lastMessageId) {
             const messageBlockNodes = this.messageListNode.querySelectorAll('ul[data-role=block-list]');
-            messageBlockNodes[messageBlockNodes.length - 1].innerHTML += messageItemTemplate({text: message.text, time: message.time});
+            messageBlockNodes[messageBlockNodes.length - 1].innerHTML += messageItemTemplate({
+                text: message.text,
+                time: message.time
+            });
         } else {
             let photo = Avatar;
             if (this.users[message.id]) {
