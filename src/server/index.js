@@ -1,6 +1,5 @@
 const Storage = require('./storage');
 const WebSocketServer = new require('ws');
-const {t} = require("@babel/core/lib/vendor/import-meta-resolve");
 
 let clients = {};
 let currentId = 1;
@@ -17,11 +16,11 @@ webSocketServer.on('connection', (ws) => {
 
     ws.on('message', (message) => {
         if (message.toString().slice(0, 2) === "_ ") {
-            const _message = message.toString().slice(2, message.length);
+            let _message = JSON.parse(message.toString().slice(2, message.length));
             storage.addMessage(_message);
 
             for (const id in clients) {
-                clients[id].send(message.toString());
+                clients[id].send("_ " + JSON.stringify(_message));
             }
         }
         else if (message.toString().slice(0, 16) === "__GET_CONDITION ") {
