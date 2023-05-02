@@ -17,7 +17,10 @@ class Storage {
             if (len > 100) {
                 this.messages = this.messages.slice(len - 100, -1);
             }
-        },1800000)
+        },1800000);
+        setTimeout(() => {
+            fs.writeFileSync(messagePath, JSON.stringify(this.messages));
+        },30000);
     }
 
     addUser(id, userName, photo) {
@@ -38,7 +41,6 @@ class Storage {
     }
 
     addMessage(message) {
-        message = JSON.parse(message);
         this.messages.push({
             id: message.id.toString(),
             userName: message.userName,

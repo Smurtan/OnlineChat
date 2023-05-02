@@ -5,6 +5,8 @@ import messageItemTemplate from "../templates/chat/message-item.hbs";
 import informationTemplate from "../templates/chat/information-message.hbs";
 import userTemplate from "../templates/chat/user.hbs";
 
+import {sanitize} from "./utils";
+
 import Avatar from "../img/avatar.jpg";
 import PhotoUser from "../img/photo.png";
 
@@ -266,6 +268,7 @@ export default class Chat {
     }
 
     addMessage(message) {
+        message.text = sanitize(message.text);
         if (message.id === this.lastMessageId) {
             const messageBlockNodes = this.messageListNode.querySelectorAll('ul[data-role=block-list]');
             messageBlockNodes[messageBlockNodes.length - 1].innerHTML += messageItemTemplate({
