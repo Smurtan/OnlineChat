@@ -1,4 +1,4 @@
-import Chat from "../chat.js";
+import Chat from "../chat/chat.js";
 import loginNameWindow from "./ui/loginNameWindow";
 import loginPhotoWindow from "./ui/loginPhotoWindow";
 

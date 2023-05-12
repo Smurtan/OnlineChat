@@ -9,7 +9,7 @@
         </div>
         <ul class="side__user-list" data-role="user-list">
             {{#each users}}
-                {{> "./user.hbs" userName=this.userName photo=this.photo id=this.id}}
+                {{> "./user.hbs" userName=userName photo=photo}}
             {{/each}}
         </ul>
     </div>
@@ -20,7 +20,7 @@
         </section>
         <section class="message" data-role="message-list">
         </section>
-        <section class="entering">
+        <section class="entering" data-role="message-sender">
             <textarea class="entering__input" type="text" placeholder="Введите сообщение..." data-role="input-message"></textarea>
             <button class="entering__button" data-role="send-message">Отправить</button>
         </section>
