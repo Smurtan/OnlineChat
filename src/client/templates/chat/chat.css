@@ -174,7 +174,7 @@ li, h3, h4, p {
     max-width: 450px;
     float: left;
     clear: left;
-    /*word-break: break-word;*/
+    word-break: break-word;
 }
 
 .message__time {
@@ -186,6 +186,9 @@ li, h3, h4, p {
 
 .message__block-my {
     flex-direction: row-reverse;
+}
+
+.message__block-my .message__block-title {
     text-align: right;
 }
 

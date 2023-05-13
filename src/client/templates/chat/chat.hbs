@@ -7,10 +7,12 @@
                 <rect y="18.3333" width="33" height="3.66667" fill="#6C7982" />
             </svg>
         </div>
+        <div class="side__user-item" data-user="{{userName}}">
+            <img class="user__logo" src="{{photo}}" data-role="my-photo">
+            <h4 class="user__name">{{userName}}</h4>
+            <p class="user__message" data-role="last-message"></p>
+        </div>
         <ul class="side__user-list" data-role="user-list">
-            {{#each users}}
-                {{> "./user.hbs" userName=this.userName photo=this.photo id=this.id}}
-            {{/each}}
         </ul>
     </div>
     <section class="chat">
@@ -20,7 +22,7 @@
         </section>
         <section class="message" data-role="message-list">
         </section>
-        <section class="entering">
+        <section class="entering" data-role="message-sender">
             <textarea class="entering__input" type="text" placeholder="Введите сообщение..." data-role="input-message"></textarea>
             <button class="entering__button" data-role="send-message">Отправить</button>
         </section>
@@ -35,7 +37,7 @@
                 </svg>
             </div>
             <input class="photo__input" id="input__photo" type="file" name="photo" accept="image/*" data-role="choose_img"/>
-            <label class="photo__input-button modal__body" for="input__photo">
+            <label class="photo__input-button modal__body" for="input__photo" data-user={{userName}}>
                 <img src="{{photo}}" alt="Фото пользователя" class="modal__photo" data-role="photo-img">
                 <p class="modal__username">{{userName}}</p>
             </label>
