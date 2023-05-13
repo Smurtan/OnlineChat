@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const usersPath = path.join(__dirname, './data/users.json');
 const messagePath = path.join(__dirname, './data/messages.json');
 
 class Storage {
@@ -11,7 +10,7 @@ class Storage {
         } else {
             this.messages = JSON.parse(fs.readFileSync(messagePath, 'utf8'));
         }
-        this.users = {};
+
         setTimeout(() => {
             const len = this.messages.length;
             if (len > 100) {
@@ -23,62 +22,15 @@ class Storage {
         },30000);
     }
 
-    addUser(id, userName, photo) {
-        this.users[id] = {
-            id: id,
-            userName: userName,
-            photo: photo,
-            active: true
-        };
-    }
-
-    changeState(id) {
-        this.users[id].active = !this.users[id].active;
-    }
-
-    addUserPhoto(id, photo) {
-        this.users[id].photo = photo;
-    }
-
-    addMessage(message) {
+    addMessage(userName, message) {
         this.messages.push({
-            id: message.id.toString(),
-            userName: message.userName,
+            userName: userName,
             text: message.text,
             time: message.time
         });
     }
 
-    getUsers() {
-        const users = {};
-
-        for (const id in this.users) {
-            if (this.users[id].active) {
-                users[id] = {
-                    id: id,
-                    userName: this.users[id].userName,
-                    photo: this.users[id].photo,
-                    active: this.users[id].active
-                }
-            }
-        }
-
-        return users;
-    }
-
-    getAllUsers() {
-        return this.users;
-    }
-
-    getPhoto(id) {
-        if (this.users[id].photo) {
-            return this.users[id].photo;
-        } else {
-            return false;
-        }
-    }
-
-    getMessages() {
+    getAllMessages() {
         return this.messages;
     }
 }

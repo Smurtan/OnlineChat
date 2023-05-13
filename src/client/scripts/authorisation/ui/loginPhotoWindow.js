@@ -33,12 +33,13 @@ export default class loginPhotoWindow {
         }, {once: true})
 
         inputImageNode.addEventListener('change', (e) => {
-            if (e.target.files[0].size > 300000) {
-                alert("Изображение слишком большое!")
-            } else {
-                this.photo = e.target.files[0];
-                showImageNode.src = URL.createObjectURL(e.target.files[0]);
-            }
+            const file = e.target.files[0];
+            const reader = new FileReader();
+
+            reader.readAsDataURL(file);
+            reader.addEventListener('load', () => this.photo = reader.result);
+
+            showImageNode.src = URL.createObjectURL(e.target.files[0]);
         })
     }
 }

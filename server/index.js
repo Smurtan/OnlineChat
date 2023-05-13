@@ -1,99 +1,116 @@
+const fs = require('fs');
+const path = require('path');
+const http = require('http');
+const {Server} = require('ws');
+
 const Storage = require('./storage');
-const WebSocketServer = new require('ws');
-
-let clients = {};
-let currentId = 1;
-
-const webSocketServer = new WebSocketServer.Server({port: 8080});
 
 const storage = new Storage();
 
-webSocketServer.on('connection', (ws) => {
-    let id = currentId++;
-    clients[id] = ws;
+function readBody(req) {
+    return new Promise((resolve, reject) => {
+        let dataRaw = '';
 
-    console.log("НОВОЕ СОЕДИНЕНИЕ");
-
-    ws.on('message', (message) => {
-        if (message.toString().slice(0, 2) === "_ ") {
-            let _message = JSON.parse(message.toString().slice(2, message.length));
-            storage.addMessage(_message);
-
-            for (const id in clients) {
-                clients[id].send("_ " + JSON.stringify(_message));
-            }
-        }
-        else if (message.toString().slice(0, 16) === "__GET_CONDITION ") {
-            const userName = message.toString().slice(16, message.length)
-            let haveUser = false;
-
-            let users = storage.getAllUsers();
-            for (const user in users) {
-                if (users[user].userName === userName) {
-                    haveUser = true;
-                    id = user;
-                    clients[id] = clients[currentId - 1];
-                    delete clients[currentId - 1];
-                    storage.changeState(id);
-                }
-            }
-            if (!haveUser) {
-                storage.addUser(id, userName);
-            }
-            users = storage.getAllUsers();
-
-            clients[id].send(`__CONDITION ${getCondition(id)}`);
-
-            const userInfo = {
-                id: id,
-                userName: userName
-            };
-            for (const key in clients) {
-                clients[key].send("__ADD_USER " + JSON.stringify(userInfo));
-                clients[key].send("_PN " + id);
-                clients[key].send(users[id].photo);
-            }
-
-            for (const key in users) {
-                if (users[key].active) {
-                    const photo = storage.getPhoto(key);
-                    if (photo) {
-                        clients[id].send("_PN " + key);
-                        clients[id].send(photo);
-                    }
-                }
-            }
-        }
-        else if (message.toString().slice(0, 1) === "�") {
-            storage.addUserPhoto(id, message);
-
-            for (const key in clients) {
-                clients[key].send("_PN " + id);
-                clients[key].send(message);
-            }
-        }
-        //console.log('получено сообщение ' + message);
+        req.on('data', (chunk) => (dataRaw += chunk));
+        req.on('error', reject);
+        req.on('end', () => resolve(JSON.parse(dataRaw)));
     })
-
-    ws.on('close', () => {
-        console.log('соединение закрыто ' + id);
-        storage.changeState(id);
-        for (const key in clients) {
-            clients[key].send("__REMOVE_USER " + id);
-        }
-    })
-})
-
-function getCondition(id) {
-    const users = storage.getUsers();
-    const messages = storage.getMessages();
-
-    const condition = {
-        currentId: id,
-        users: users,
-        messages: messages,
-    }
-    return JSON.stringify(condition);
 }
+
+const server = http.createServer(async (req, res) => {
+    try {
+        if (/\/photos\/.+\.png/.test(req.url)) {
+            const [, imageName] = req.url.match(/\/photos\/(.+\.png)/) || [];
+            const fallBackPath = path.resolve(__dirname, './photos/no_photo.png');
+            const filePath = path.resolve(__dirname, './photos', imageName);
+
+            if (fs.existsSync(filePath)) {
+                return fs.createReadStream(filePath).pipe(res);
+            } else {
+                return fs.createReadStream(fallBackPath).pipe(res);
+            }
+        } else if (req.url.endsWith('/upload-photo')) {
+            const body = await readBody(req);
+            const name = body.name.replace(/\.\.\/|\//, '');
+            const [, content] = body.image.match(/data:image\/.+?;base64,(.+)/) || [];
+            const filePath = path.resolve(__dirname, './photos', `${name}.png`);
+
+            if (name && content) {
+                fs.writeFileSync(filePath, content, 'base64');
+                broadcast(connections, {type: 'change-photo', data: {name}});
+            } else {
+                return res.end('fail');
+            }
+        }
+        res.end('ok');
+    } catch (e) {
+        console.error(e);
+        res.end('fail');
+    }
+});
+
+const wss = new Server({server});
+const connections = new Map();
+
+wss.on('connection', (socket) => {
+    connections.set(socket, {});
+
+    socket.on('message', (messageData) => {
+        const message = JSON.parse(messageData);
+        let excludeItself = false;
+
+        if (message.type === 'hello') {
+            excludeItself = true;
+            connections.get(socket).userName = message.data.userName;
+            sendMessageTo({
+                type: 'user-list',
+                data: [...connections.values()].map((item) => item.userName).filter(item => item && item !== connections.get(socket).userName),
+            }, socket);
+            sendMessageTo({
+                type: 'message-list',
+                data: storage.getAllMessages(),
+            }, socket);
+        } else if (message.type === 'text-message') {
+            storage.addMessage(connections.get(socket).userName, message.data.message);
+        }
+
+        sendMessageFrom(connections, message, socket, excludeItself);
+    });
+
+    socket.on('close', () => {
+        sendMessageFrom(connections, {type: 'goodbye'}, socket);
+        connections.delete(socket);
+    });
+});
+
+function sendMessageTo(message, to) {
+    to.send(JSON.stringify(message));
+}
+
+function sendMessageFrom(connections, message, from, excludeSelf) {
+    const socketData = connections.get(from);
+
+    if (!socketData) {
+        return;
+    }
+
+    message.from = socketData.userName;
+
+    for (const connection of connections.keys()) {
+        if (connection === from && excludeSelf) {
+            continue;
+        }
+
+        connection.send(JSON.stringify(message));
+    }
+}
+
+function broadcast(connections, message) {
+    for (const connection of connections.keys()) {
+        connection.send(JSON.stringify(message));
+    }
+}
+
+server.listen(8080);
 
 console.log('Сервер запущен на порту 8080')

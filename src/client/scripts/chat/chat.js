@@ -1,7 +1,5 @@
 import chatTemplate from "../../templates/chat/chat.hbs";
 
-import PhotoUser from "../../img/photo.png";
-
 import UserList from "./ui/userList";
 import UserPhoto from "./ui/userPhoto";
 import MessageList from "./ui/messageList";
@@ -22,19 +20,25 @@ export default class Chat {
             `ws://localhost:8080`,
             this.onMessage.bind(this),
         );
-        this.modalWindow = new ModalWindow(this.plaseInsertionNode.querySelector('[data-role=modal-window]'))
+        this.modalWindow = new ModalWindow(
+            this.plaseInsertionNode.querySelector('[data-role=modal-window]'),
+            this.onUpload.bind(this)
+        )
 
         this.ui = {
             userList: new UserList(
                 this.plaseInsertionNode.querySelector('[data-role=user-list]'),
-                this.plaseInsertionNode.querySelector('[data-role=count-user]'),
-                userName,
-                this.modalWindow.show.bind(this)
+                this.plaseInsertionNode.querySelector('[data-role=count-user]')
             ),
-            userPhoto: new UserPhoto(),
+            userPhoto: new UserPhoto(
+                this.plaseInsertionNode.querySelector('[data-role=my-photo]'),
+                this.onUpload.bind(this),
+                this.modalWindow.show.bind(this.modalWindow)
+            ),
             messageList: new MessageList(
                 this.plaseInsertionNode.querySelector('[data-role=message-list]'),
-                userName
+                this.sideBarNode,
+                userName,
             ),
             messageSender: new MessageSender(
                 this.plaseInsertionNode.querySelector('[data-role=message-sender]'),
@@ -43,13 +47,14 @@ export default class Chat {
         }
 
         this.onLogin();
+        if (this.photo) {this.onUpload(this.photo)}
     }
 
     initChat() {
         this.burger = false;
 
         this.plaseInsertionNode.innerHTML = chatTemplate({
-            photo: this.photo || PhotoUser,
+            photo: `http://localhost:8080/photos/${this.userName}.png?t=${Date.now()}`,
             userName: this.userName,
             countUser: "1 участник",
         });
@@ -77,39 +82,6 @@ export default class Chat {
                 this.burger = false;
             }
         })
-
-
-        // document.addEventListener('dragover', e => {
-        //     e.preventDefault()
-        // })
-        //
-        // document.addEventListener('drop', e => {
-        //     e.preventDefault();
-        //
-        //     if (this.getCurrentUser(e.target, this.id)) {
-        //         const dt = e.dataTransfer;
-        //
-        //         if (dt.files && dt.files.length) {
-        //             console.log('есть контакт')
-        //             if (dt.files.size > 300000) {
-        //                 alert("Изображение слишком большое!");
-        //             } else {
-        //                 for (const file of dt.files) {
-        //                     const reader = new FileReader();
-        //
-        //                     reader.readAsDataURL(file);
-        //                     reader.addEventListener('load', () => {
-        //                         this.photo = file;
-        //                         this.modalImageNode.src = reader.result;
-        //                         this.users[this.id].photo = reader.result;
-        //                         this.socket.send(this.photo);
-        //                         this.addPhotoUser();
-        //                     })
-        //                 }
-        //             }
-        //         }
-        //     }
-        // })
     }
 
     async onLogin() {
@@ -117,7 +89,7 @@ export default class Chat {
         this.wsClient.sendHello(this.userName);
     }
 
-    onMessage({ type, from, data }) {
+    onMessage({type, from, data}) {
         if (type === "text-message") {
             this.ui.messageList.add(from, data.message.text, data.message.time);
         } else if (type === "hello") {
@@ -129,13 +101,20 @@ export default class Chat {
             }
         } else if (type === "message-list") {
             for (const item of data) {
-                this.ui.messageList.add(from, data.message.text, data.message.time);
+                this.ui.messageList.add(item.userName, item.text, item.time);
             }
         } else if (type === "goodbye") {
             this.ui.userList.remove(from);
             this.ui.messageList.addSystemMessage(`${from} вышел из чата`);
         } else if (type === "change-photo") {
-
+            console.log(data);
+            const imgUserNodes = this.plaseInsertionNode.querySelectorAll(
+                `[data-user='${data.name}'] [data-role=photo-img]`
+            );
+            console.log(imgUserNodes);
+            for (const node of imgUserNodes) {
+                node.src = `http://localhost:8080/photos/${data.name}.png?t=${Date.now()}`;
+            }
         }
     }
 
@@ -151,23 +130,15 @@ export default class Chat {
         this.ui.messageSender.clear();
     }
 
-    // getCurrentUser(from, id) {
-    //     do {
-    //         console.log(from.dataset);
-    //         if (from.dataset && from.dataset.id === id) {
-    //             console.log('Есть картинка');
-    //             return from
-    //         }
-    //     } while (from = from.parentNode)
-    //
-    //     return null;
-    // }
-    //
-    // addPhotoUser() {
-    //     const imgUserNodes = this.plaseInsertionNode.querySelectorAll(`[data-id='${this.currentGetPhotoId}'] IMG`);
-    //
-    //     for (const node of imgUserNodes) {
-    //         node.src = this.users[this.currentGetPhotoId].photo;
-    //     }
-    // }
+    onUpload(data) {
+        this.ui.userPhoto.set(data);
+
+        fetch('http://localhost:8080/upload-photo', {
+            method: 'post',
+            body: JSON.stringify({
+                name: this.userName,
+                image: data,
+            })
+        });
+    }
 }

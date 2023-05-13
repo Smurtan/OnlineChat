@@ -1,44 +1,31 @@
 import userTemplate from "../../../templates/chat/user.hbs";
-import Avatar from "../../../img/avatar.jpg";
 
 export default class UserList {
-    constructor(list, countUser, userName, onClickMyUser) {
+    constructor(list, countUser) {
         this.userListNode = list;
         this.countUserNode = countUser;
-        this.userName = userName;
-        this.onClickMyUser = onClickMyUser;
         this.items = new Set();
     }
 
-    changeDOM() {
-        const fragment = document.createDocumentFragment();
+    changeDOM(userName) {
+        let fragment = '';
 
         for (const name of this.items) {
-            if (name === this.userName) {
-                fragment.prepend(userTemplate({userName: name, photo: Avatar}));
-            } else {
-                fragment.append(userTemplate({userName: name, photo: Avatar}));
-            }
+            fragment += userTemplate({userName: name, photo: `http://localhost:8080/photos/${userName}.png?t=${Date.now()}`});
         }
 
-        this.userListNode.innerHTML = '';
-        this.userListNode.append(fragment);
-
-        this.userListNode.firstElementChild.addEventListener('click', () => {
-            this.onClickMyUser();
-        })
-
+        this.userListNode.innerHTML = fragment;
         this.countUserNode.textContent = this.declinationCountUser(this.items.size + 1);
     }
 
     add(userName) {
         this.items.add(userName);
-        this.changeDOM();
+        this.changeDOM(userName);
     }
 
     remove(userName) {
         this.items.delete(userName);
-        this.changeDOM();
+        this.changeDOM(userName);
     }
 
     declinationCountUser(count) {
